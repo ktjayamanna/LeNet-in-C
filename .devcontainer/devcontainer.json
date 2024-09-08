@@ -1,0 +1,22 @@
+{
+    "name": "LeNet C Dev Environment",
+    "dockerFile": "../Dockerfile",
+    "context": "..",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-vscode.cpptools", 
+        "ms-vscode.cmake-tools",       
+        "oderwat.indent-rainbow",     
+        "mhutchie.git-graph",          
+        "streetsidesoftware.code-spell-checker",
+    ],
+    "postCreateCommand": "make clean && make", 
+    "runArgs": ["--init", "--user", "1000:1000"],
+    "workspaceFolder": "/code",
+    "remoteUser": "root", 
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/code,type=bind"
+    ]
+}
