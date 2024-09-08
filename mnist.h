@@ -1,8 +1,3 @@
-/*
-Takafumi Hoiruchi. 2018.
-https://github.com/takafumihoriuchi/MNIST_for_C
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -41,6 +36,81 @@ double train_image[NUM_TRAIN][SIZE];
 double test_image[NUM_TEST][SIZE];
 int  train_label[NUM_TRAIN];
 int test_label[NUM_TEST];
+
+// Function declarations (forward declarations)
+void read_mnist_char(char *file_path, int num_data, int len_info, int arr_n, unsigned char data_char[][arr_n], int info_arr[]);
+void image_char2double(int num_data, unsigned char data_image_char[][SIZE], double data_image[][SIZE]);
+void label_char2int(int num_data, unsigned char data_label_char[][1], int data_label[]);
+void reshape_batch_to_2d(int batch_size, double batch_images[][SIZE], double reshaped_images[][28][28]);
+void print_reshaped_images(int batch_size, double reshaped_images[][28][28]);
+void load_mnist_batch(int batch_size, int batch_index, double batch_images[][SIZE], int batch_labels[]);
+
+void reshape_batch_to_2d(int batch_size, double batch_images[][SIZE], double reshaped_images[][28][28]) {
+    int i, x, y;
+    
+    // Loop through each image in the batch
+    for (i = 0; i < batch_size; i++) {
+        // Reshape each image (1D -> 2D)
+        for (x = 0; x < 28; x++) {
+            for (y = 0; y < 28; y++) {
+                reshaped_images[i][x][y] = batch_images[i][x * 28 + y];
+            }
+        }
+    }
+}
+
+void print_reshaped_images(int batch_size, double reshaped_images[][28][28]) {
+    int i, x, y;
+    
+    // Loop through each image in the batch
+    for (i = 0; i < batch_size; i++) {
+        printf("Image %d:\n", i + 1);
+        
+        // Print the 2D image (28x28)
+        for (x = 0; x < 28; x++) {
+            for (y = 0; y < 28; y++) {
+                // Map pixel values to human-readable characters
+                if (reshaped_images[i][x][y] > 0.75)
+                    printf("#");  // High pixel value (close to 1)
+                else if (reshaped_images[i][x][y] > 0.5)
+                    printf("o");  // Mid-high pixel value
+                else if (reshaped_images[i][x][y] > 0.25)
+                    printf("+");  // Mid-low pixel value
+                else
+                    printf(".");  // Low pixel value (close to 0)
+            }
+            printf("\n");  // Newline for the next row
+        }
+        printf("\n");  // Space between images
+    }
+}
+
+
+
+void load_mnist_batch(int batch_size, int batch_index, double batch_images[][SIZE], int batch_labels[]) {
+    int start_index = batch_index * batch_size;
+    int i, j;
+
+    // Load train images for the batch
+    read_mnist_char(TRAIN_IMAGE, NUM_TRAIN, LEN_INFO_IMAGE, SIZE, train_image_char, info_image);
+    image_char2double(NUM_TRAIN, train_image_char, train_image);
+
+    // Copy only the requested batch of images
+    for (i = 0; i < batch_size; i++) {
+        for (j = 0; j < SIZE; j++) {
+            batch_images[i][j] = train_image[start_index + i][j];
+        }
+    }
+
+    // Load train labels for the batch
+    read_mnist_char(TRAIN_LABEL, NUM_TRAIN, LEN_INFO_LABEL, 1, train_label_char, info_label);
+    label_char2int(NUM_TRAIN, train_label_char, train_label);
+
+    // Copy only the requested batch of labels
+    for (i = 0; i < batch_size; i++) {
+        batch_labels[i] = train_label[start_index + i];
+    }
+}
 
 
 void FlipLong(unsigned char * ptr)
@@ -194,3 +264,4 @@ void save_mnist_pgm(double data_image[][SIZE], int index)
 
     save_image(n, "");
 }
+
